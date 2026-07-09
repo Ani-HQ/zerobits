@@ -6,16 +6,7 @@
 
 Zero build. Zero required dependencies. Point any agent (or yourself) at it and it just runs.
 
-```
-🚫  GUILTY   508 tokens, 21.6/100 signal. Illegal under §500: 500+ tokens, ~zero bits of information.
-
-  signal   █████░░░░░░░░░░░░░░░░░░░  21.6/100
-
-  entropy   █████████░░░░░░░░░  51.2  compressed information content
-  diversity ████████████████░░  90.8  distinct vocabulary
-  non-repeat ████████████████░░  90.6  lack of repeated phrasing
-  no-filler █████░░░░░░░░░░░░░  29.6  freedom from corporate filler
-```
+![zerobits — one corporate all-hands email (GUILTY) vs one deploy post-mortem (CLEAR)](media/demo.gif)
 
 ## Run it (nothing to install)
 
