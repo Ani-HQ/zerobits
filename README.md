@@ -6,7 +6,7 @@
 
 Zero build. Zero required dependencies. Point any agent (or yourself) at it and it just runs.
 
-![zerobits — one corporate all-hands email (GUILTY) vs one deploy post-mortem (CLEAR)](media/demo.gif)
+![zerobits — one corporate all-hands email (GUILTY) vs one deploy post-mortem (CLEAR)](https://raw.githubusercontent.com/Ani-HQ/zerobits/main/media/demo.gif)
 
 ## Run it (nothing to install)
 
