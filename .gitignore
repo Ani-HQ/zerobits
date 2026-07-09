@@ -1,0 +1,12 @@
+node_modules/
+*.log
+.DS_Store
+.env
+.env.*
+dist/
+coverage/
+
+# tool artifacts
+.claude-flow/
+.swarm/
+.mcp.json

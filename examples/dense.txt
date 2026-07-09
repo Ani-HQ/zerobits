@@ -1,0 +1,14 @@
+The deploy failed because the migration added a NOT NULL column without a default,
+and the table already had 2.3M rows. Postgres rewrites the whole table for that, which
+took the lock past the 30-second statement_timeout and rolled back.
+
+Fix: split it into three steps. First add the column as nullable. Then backfill in
+batches of 10k with a short sleep between batches so replication keeps up. Only after
+the backfill completes do you add the NOT NULL constraint using
+`ALTER TABLE ... ADD CONSTRAINT ... NOT VALID` followed by `VALIDATE CONSTRAINT`, which
+takes a SHARE UPDATE EXCLUSIVE lock instead of an ACCESS EXCLUSIVE one.
+
+I pushed the three migrations to the `fix/nullable-backfill` branch. The backfill script
+is idempotent — it checks a `backfilled_at` watermark, so re-running after a crash resumes
+where it stopped. Staging ran it against a 5M-row clone in 4 minutes with no lock
+contention. Rolling to prod tonight at 02:00 UTC when traffic is lowest.

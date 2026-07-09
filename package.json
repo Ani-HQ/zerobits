@@ -1,0 +1,48 @@
+{
+  "name": "zerobits",
+  "version": "0.1.0",
+  "description": "Measure the information density of text. Catches 500+ tokens that carry ~zero bits of information.",
+  "type": "module",
+  "bin": {
+    "zerobits": "bin/zerobits.js"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "RUBRIC.md",
+    "AGENTS.md"
+  ],
+  "scripts": {
+    "start": "node bin/zerobits.js",
+    "test": "node --test",
+    "demo": "node bin/zerobits.js examples/empty.txt --verbatim"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "tokens",
+    "information-density",
+    "signal-to-noise",
+    "llm",
+    "filler",
+    "entropy",
+    "text-analysis",
+    "cli",
+    "waffle",
+    "bloat"
+  ],
+  "author": "Ani",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anianroid/zerobits.git"
+  },
+  "homepage": "https://github.com/anianroid/zerobits#readme",
+  "bugs": {
+    "url": "https://github.com/anianroid/zerobits/issues"
+  }
+}

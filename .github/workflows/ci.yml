@@ -1,0 +1,22 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Run tests (no dependencies to install)
+        run: node --test
+      - name: Dogfood — the tool must convict its own empty example
+        run: node bin/zerobits.js --check examples/empty.txt || echo "convicted as expected"
