@@ -20,7 +20,7 @@ Zero build. Zero required dependencies. Point any agent (or yourself) at it and 
 ## Run it (nothing to install)
 
 ```bash
-git clone https://github.com/anianroid/zerobits
+git clone https://github.com/Ani-HQ/zerobits
 node zerobits/bin/zerobits.js zerobits/examples/empty.txt
 ```
 

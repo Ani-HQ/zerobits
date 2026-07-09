@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // zerobits CLI. Zero build step, zero required dependencies.
-//   git clone https://github.com/anianroid/zerobits && node zerobits/bin/zerobits.js --help
+//   git clone https://github.com/Ani-HQ/zerobits && node zerobits/bin/zerobits.js --help
 
 import { run } from '../src/cli.js';
 
