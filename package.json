@@ -1,6 +1,6 @@
 {
   "name": "zerobits",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Measure the information density of text. Catches 500+ tokens that carry ~zero bits of information.",
   "type": "module",
   "bin": {
