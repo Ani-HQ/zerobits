@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -79,6 +80,19 @@ test('buildPrompt embeds the passage and rubric', () => {
   const p = buildPrompt('hello');
   assert.ok(p.includes('hello'));
   assert.ok(p.toLowerCase().includes('information-density'));
+});
+
+test('CLI --version matches package.json (no drift)', () => {
+  const pkg = JSON.parse(readFileSync(join(here, '..', 'package.json'), 'utf8'));
+  const bin = join(here, '..', 'bin', 'zerobits.js');
+  const out = execFileSync('node', [bin, '--version'], { encoding: 'utf8' }).trim();
+  assert.equal(out, pkg.version);
+});
+
+test('CLI --help documents the judge timeout flag', () => {
+  const bin = join(here, '..', 'bin', 'zerobits.js');
+  const out = execFileSync('node', [bin, '--help'], { encoding: 'utf8' });
+  assert.match(out, /--timeout/);
 });
 
 test('detectProvider follows key precedence', () => {

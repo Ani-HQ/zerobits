@@ -58,13 +58,14 @@ export async function judge(text, opts = {}) {
     );
   }
   const prompt = buildPrompt(text);
+  const timeoutMs = opts.timeoutMs || (Number(env.ZEROBITS_TIMEOUT) || 30) * 1000;
   let raw, model;
   if (provider === 'anthropic') {
-    ({ raw, model } = await callAnthropic(prompt, env, opts));
+    ({ raw, model } = await callAnthropic(prompt, env, opts, timeoutMs));
   } else if (provider === 'gemini') {
-    ({ raw, model } = await callGemini(prompt, env, opts));
+    ({ raw, model } = await callGemini(prompt, env, opts, timeoutMs));
   } else if (provider === 'openai') {
-    ({ raw, model } = await callOpenAI(prompt, env, opts));
+    ({ raw, model } = await callOpenAI(prompt, env, opts, timeoutMs));
   } else {
     throw new Error(`Unknown provider: ${provider}`);
   }
@@ -78,9 +79,25 @@ export async function judge(text, opts = {}) {
   };
 }
 
-async function callAnthropic(prompt, env, opts) {
+// fetch() with a hard timeout, so a stalled provider can't hang the CLI.
+async function fetchWithTimeout(url, options, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (err) {
+    if (err?.name === 'AbortError') {
+      throw new Error(`judge request timed out after ${Math.round(timeoutMs / 1000)}s`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function callAnthropic(prompt, env, opts, timeoutMs) {
   const model = opts.model || env.ZEROBITS_MODEL || 'claude-haiku-4-5';
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
@@ -92,34 +109,34 @@ async function callAnthropic(prompt, env, opts) {
       max_tokens: 600,
       messages: [{ role: 'user', content: prompt }],
     }),
-  });
+  }, timeoutMs);
   if (!res.ok) throw new Error(`Anthropic API ${res.status}: ${await res.text()}`);
   const data = await res.json();
   const raw = (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('');
   return { raw, model };
 }
 
-async function callGemini(prompt, env, opts) {
+async function callGemini(prompt, env, opts, timeoutMs) {
   const model = opts.model || env.ZEROBITS_MODEL || 'gemini-2.5-flash';
   const key = env.GEMINI_API_KEY || env.GOOGLE_API_KEY;
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-  const res = await fetch(url, {
+  const res = await fetchWithTimeout(url, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { temperature: 0, responseMimeType: 'application/json' },
     }),
-  });
+  }, timeoutMs);
   if (!res.ok) throw new Error(`Gemini API ${res.status}: ${await res.text()}`);
   const data = await res.json();
   const raw = data.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') || '';
   return { raw, model };
 }
 
-async function callOpenAI(prompt, env, opts) {
+async function callOpenAI(prompt, env, opts, timeoutMs) {
   const model = opts.model || env.ZEROBITS_MODEL || 'gpt-4o-mini';
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+  const res = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
@@ -131,7 +148,7 @@ async function callOpenAI(prompt, env, opts) {
       response_format: { type: 'json_object' },
       messages: [{ role: 'user', content: prompt }],
     }),
-  });
+  }, timeoutMs);
   if (!res.ok) throw new Error(`OpenAI API ${res.status}: ${await res.text()}`);
   const data = await res.json();
   const raw = data.choices?.[0]?.message?.content || '';

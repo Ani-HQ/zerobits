@@ -100,6 +100,15 @@ zerobits --check PR_DESCRIPTION.md   # exit 1 if GUILTY
 
 Drop it in a pre-commit hook to keep commit messages honest, or in CI to keep PR descriptions from waffling.
 
+## Accuracy & scope
+
+Be honest about what this is:
+
+- **Token count is an estimate.** The zero-dependency build approximates tokens (within ~10-15% of tiktoken for English prose). For exact cl100k counts, `npm i gpt-tokenizer` — zerobits uses it automatically if present.
+- **Scores are directional, not audit-grade.** The thresholds are documented heuristics tuned for readable English. Borderline inputs can tip either way; treat the verdict as a strong hint, not a proof.
+- **English-tuned.** The filler lexicon and calibration target English. Other languages still get compression/diversity signals, but expect less precise verdicts.
+- **Repetitive structured data (JSON, logs) reads as low-density** — which is usually correct, but occasionally surprising.
+
 ## License
 
 MIT © Ani. Built in reply to [@gabriel1](https://twitter.com/gabriel1)'s statute.

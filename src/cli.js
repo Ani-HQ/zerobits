@@ -23,6 +23,7 @@ OPTIONS
       --check            exit non-zero if any input is GUILTY (for CI / git hooks)
       --provider <name>  force judge provider: anthropic | gemini | openai
       --model <id>       override the judge model
+      --timeout <s>      judge request timeout in seconds (default 30)
       --no-color         disable ANSI colour
   -q, --quiet            print only the verdict line
   -h, --help             show this help
@@ -34,7 +35,9 @@ JUDGE KEYS (auto-detected, in order)
 
   §500 — speaking 500+ tokens while providing ~zero bits of information.`;
 
-const VERSION = '0.1.0';
+const VERSION = JSON.parse(
+  fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+).version;
 
 export async function run(argv) {
   const opts = parseArgs(argv);
@@ -72,7 +75,11 @@ export async function run(argv) {
 
     if (opts.judge) {
       try {
-        result.judge = await judge(item.text, { provider: opts.provider, model: opts.model });
+        result.judge = await judge(item.text, {
+          provider: opts.provider,
+          model: opts.model,
+          timeoutMs: opts.timeout ? opts.timeout * 1000 : undefined,
+        });
       } catch (err) {
         result.judge = { error: err.message };
         process.stderr.write(`zerobits: judge skipped — ${err.message}\n`);
@@ -114,6 +121,7 @@ function parseArgs(argv) {
     color: true,
     provider: undefined,
     model: undefined,
+    timeout: undefined,
     help: false,
     version: false,
     stdin: false,
@@ -135,12 +143,14 @@ function parseArgs(argv) {
       case '--min-density': opts.minDensity = Number(argv[++i]); break;
       case '--provider': opts.provider = argv[++i]; break;
       case '--model': opts.model = argv[++i]; break;
+      case '--timeout': opts.timeout = Number(argv[++i]); break;
       case '-': opts.stdin = true; break;
       default:
         if (a.startsWith('--threshold=')) opts.threshold = Number(a.split('=')[1]);
         else if (a.startsWith('--min-density=')) opts.minDensity = Number(a.split('=')[1]);
         else if (a.startsWith('--provider=')) opts.provider = a.split('=')[1];
         else if (a.startsWith('--model=')) opts.model = a.split('=')[1];
+        else if (a.startsWith('--timeout=')) opts.timeout = Number(a.split('=')[1]);
         else if (a.startsWith('-') && a.length > 1 && !/^-\d/.test(a)) {
           process.stderr.write(`zerobits: unknown option ${a}\n`);
         } else {
